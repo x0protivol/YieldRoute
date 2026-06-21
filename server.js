@@ -3,9 +3,9 @@
 // Protected by Circle x402 Nanopayments
 // Built for Circle Hackathon 2026
 
-import express from "express";
-import { createGatewayMiddleware } from "@circle-fin/x402-batching/server";
-import dotenv from "dotenv";
+const express = require("express");
+const { createGatewayMiddleware } = require("@circle-fin/x402-batching/server");
+const dotenv = require("dotenv");
 
 dotenv.config();
 
