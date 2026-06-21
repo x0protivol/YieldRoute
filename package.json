@@ -2,6 +2,7 @@
   "name": "yieldroute",
   "version": "1.0.0",
   "description": "YieldRoute: Agentic DeFi Routing powered by Circle Arc x402 Nanopayments - The Web3 Ad Killer",
+    "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
