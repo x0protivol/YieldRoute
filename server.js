@@ -14,26 +14,23 @@ app.use(express.json());
 
 // =============================================================
 // Initialize Circle Gateway Middleware for the AI Node (Seller)
+// Uses v3 API: gateway.require() instead of gatewayAuth.requirePayment()
 // =============================================================
-const gatewayAuth = createGatewayMiddleware({
-  sellerAddress: process.env.SELLER_WALLET_ADDRESS,
-  networks: ["arcTestnet"] // Forces settlement on Arc L1 Testnet
+const gateway = createGatewayMiddleware({
+  sellerAddress: process.env.SELLER_WALLET_ADDRESS || "0x0000000000000000000000000000000000000001",
+  facilitatorUrl: "https://gateway-api-testnet.circle.com",
+  networks: ["eip155:5042002"], // Arc L1 Testnet
 });
 
 // =============================================================
-// /simulate-yield — The Core YieldRoute Endpoint
-//
-// This endpoint is protected by x402. If no valid nanopayment
-// authorization is attached to the request, the middleware
-// returns HTTP 402 Payment Required, triggering the micro-auction
-// where DeFi protocol bots (like Aave) bid to sponsor the cost.
+// /simulate-yield - The Core YieldRoute Endpoint
+// Protected by x402: returns 402 if no valid nanopayment.
+// DeFi protocol bots (like Aave) bid to sponsor the cost.
 // =============================================================
 app.post(
   "/simulate-yield",
-  gatewayAuth.requirePayment({ amount: "0.005", currency: "USDC" }),
+  gateway.require({ amount: "0.005", currency: "USDC" }),
   async (req, res) => {
-    // If we reach this handler, the x402 nanopayment was
-    // cryptographically verified by Circle Gateway.
     console.log("[YieldRoute] Payment verified via x402. Running AI inference...");
 
     const userIntent = req.body.intent || "Optimize yield for USDC";
@@ -42,14 +39,13 @@ app.post(
     console.log(`[YieldRoute] Intent: ${userIntent}`);
     console.log(`[YieldRoute] Sponsored by: ${sponsorProtocol}`);
 
-    // Simulate yield analysis (in production: call an LLM or inference API)
     const yieldData = [
       { protocol: "Aave v3", apy: "5.2%", tvl: "$8.4B", risk: "Low", chain: "Arc L1" },
       { protocol: "Uniswap v4", apy: "4.8%", tvl: "$6.1B", risk: "Medium", chain: "Arc L1" },
       { protocol: "Compound v3", apy: "4.1%", tvl: "$3.2B", risk: "Low", chain: "Arc L1" },
     ];
 
-    const best = yieldData[0]; // Aave wins (highest APY)
+    const best = yieldData[0];
 
     const response = {
       success: true,
@@ -74,25 +70,18 @@ app.post(
     };
 
     console.log(`[YieldRoute] Recommendation: ${best.protocol} @ ${best.apy} APY`);
-    console.log("[YieldRoute] Settling micro-payment to Circle Gateway...");
-
-    // Submit the micro-payment to Circle Gateway for batched Arc L1 settlement
-    req.gateway.settle();
-
-    console.log("[YieldRoute] Settlement submitted. Zero gas. Sub-second finality.");
-
     res.json(response);
   }
 );
 
 // =============================================================
-// Health check endpoint
+// Health check endpoint (public, no payment required)
 // =============================================================
 app.get("/health", (req, res) => {
   res.json({
     status: "online",
     node: "YieldRoute AI Node",
-    seller: process.env.SELLER_WALLET_ADDRESS,
+    seller: process.env.SELLER_WALLET_ADDRESS || "not-configured",
     network: "Arc L1 Testnet",
     payment_required: "$0.005 USDC via x402",
     timestamp: new Date().toISOString(),
@@ -100,17 +89,38 @@ app.get("/health", (req, res) => {
 });
 
 // =============================================================
-// Start the server
+// Root endpoint - API info
 // =============================================================
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("========================================");
-  console.log(" YieldRoute AI Node - Circle Hackathon ");
-  console.log("========================================");
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Seller Address: ${process.env.SELLER_WALLET_ADDRESS}`);
-  console.log(`Network: Arc L1 Testnet`);
-  console.log(`x402 Price: $0.005 USDC per /simulate-yield call`);
-  console.log("Waiting for DeFi protocol bids...");
-  console.log("========================================");
+app.get("/", (req, res) => {
+  res.json({
+    name: "YieldRoute AI Node",
+    version: "1.0.0",
+    description: "Agentic DeFi Routing powered by Circle Arc x402 Nanopayments",
+    endpoints: {
+      health: "GET /health",
+      simulate_yield: "POST /simulate-yield (requires x402 payment of $0.005 USDC)",
+    },
+    network: "Arc L1 Testnet (Chain ID: 5042002)",
+    docs: "https://github.com/x0protivol/YieldRoute",
+  });
 });
+
+// =============================================================
+// Start server (local dev) or export for Vercel serverless
+// =============================================================
+if (process.env.VERCEL !== "1") {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log("========================================");
+    console.log(" YieldRoute AI Node - Circle Hackathon ");
+    console.log("========================================");
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Seller Address: ${process.env.SELLER_WALLET_ADDRESS}`);
+    console.log(`Network: Arc L1 Testnet`);
+    console.log(`x402 Price: $0.005 USDC per /simulate-yield call`);
+    console.log("Waiting for DeFi protocol bids...");
+    console.log("========================================");
+  });
+}
+
+export default app;
