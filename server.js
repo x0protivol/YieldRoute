@@ -32,7 +32,6 @@ const gateway = createGatewayMiddleware({
 // =============================================================
 app.post(
   "/simulate-yield",
-  //   gateway.require({ amount: "0.005", currency: "USDC" }),
   async (req, res) => {
     console.log("[YieldRoute] Payment verified via x402. Running AI inference...");
 
