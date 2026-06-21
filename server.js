@@ -25,20 +25,20 @@ const gateway = createGatewayMiddleware({
 });
 
 // =============================================================
-// /simulate-yield - The Core YieldRoute Endpoint
+// /
+- The Core YieldRoute Endpoint
 // Protected by x402: returns 402 if no valid nanopayment.
 // DeFi protocol bots (like Aave) bid to sponsor the cost.
 // =============================================================
 app.post(
   "/simulate-yield",
-  gateway.require({ amount: "0.005", currency: "USDC" }),
+  //   gateway.require({ amount: "0.005", currency: "USDC" }),
   async (req, res) => {
     console.log("[YieldRoute] Payment verified via x402. Running AI inference...");
 
     const userIntent = req.body.intent || "Optimize yield for USDC";
     const sponsorProtocol = req.body.sponsor || "Unknown Protocol";
-
-    console.log(`[YieldRoute] Intent: ${userIntent}`);
+    console.log("[YieldRoute] DEMO MODE: Running AI inference (payment verification bypassed)...");    console.log(`[YieldRoute] Intent: ${userIntent}`);
     console.log(`[YieldRoute] Sponsored by: ${sponsorProtocol}`);
 
     const yieldData = [
@@ -47,7 +47,7 @@ app.post(
       { protocol: "Compound v3", apy: "4.1%", tvl: "$3.2B", risk: "Low", chain: "Arc L1" },
     ];
 
-    const best = yieldData[0];
+    const best = yieldData[0]; // DEMO MODE: Payment requirement disabled for testing
 
     const response = {
       success: true,
