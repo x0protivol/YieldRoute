@@ -11,6 +11,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(express.static('public')); // Serve frontend
 
 // =============================================================
 // Initialize Circle Gateway Middleware for the AI Node (Seller)
