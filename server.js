@@ -6,6 +6,7 @@
 import express from "express";
 import { createGatewayMiddleware } from "@circle-fin/x402-batching/server";
 import dotenv from "dotenv";
+import path from "path";
 
 dotenv.config();
 
@@ -93,18 +94,8 @@ app.get("/health", (req, res) => {
 // Root endpoint - API info
 // =============================================================
 app.get("/", (req, res) => {
-  res.json({
-    name: "YieldRoute AI Node",
-    version: "1.0.0",
-    description: "Agentic DeFi Routing powered by Circle Arc x402 Nanopayments",
-    endpoints: {
-      health: "GET /health",
-      simulate_yield: "POST /simulate-yield (requires x402 payment of $0.005 USDC)",
-    },
-    network: "Arc L1 Testnet (Chain ID: 5042002)",
-    docs: "https://github.com/x0protivol/YieldRoute",
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
-});
 
 // =============================================================
 // Start server (local dev) or export for Vercel serverless
