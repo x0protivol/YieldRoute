@@ -6,7 +6,6 @@
 import express from "express";
 import { createGatewayMiddleware } from "@circle-fin/x402-batching/server";
 import dotenv from "dotenv";
-import path from "path";
 
 dotenv.config();
 
